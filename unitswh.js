@@ -13,6 +13,7 @@ class Unit {
         this._Hero = [];
         this._Ward = [];
         this._Class = [];
+        this._Prayer =[];
     }
 
     get Name() {
@@ -57,16 +58,17 @@ class Unit {
             this._Wounds = newWounds;
         }
     }
+    get Move() {
+        return this._Move;
+    }
     set Move(newMove) {
-        // Assume newMove is now an object { value: 5, hindered: false }
-        this._Move = newMove.value;
-        this._MoveHindered = newMove.hindered;
+        if (typeof newMove === 'number' && newMove >= 0) {
+            this._Move = newMove;
+        } else {
+            console.error('Move must be a non-negative number.');
+        }
     }
     
-    get Move() {
-        // You can now compute the returned value based on internal state
-        return this._MoveHindered ? this._Move - 2 : this._Move;
-    }
     set Bravery(newBravery) {
         if (newBravery < 0) {
             console.error('Bravery cannot be negative.');
@@ -90,6 +92,7 @@ class Unit {
     addHero(hero) { this._Hero.push(hero); }
     addWard(ward) { this._Ward.push(ward); }
     addShooting(shooting) { this._Shooting.push(shooting); }
+    addPrayer(prayer) {this._Prayer.push(prayer)}
 
     info() {
         let baseInfo = `<p class="unitName">${this._Name}</p>
@@ -156,6 +159,12 @@ It has a casting value of ${magic.value} and if successfully cast, ${magic.desc}
                 baseInfo += `<p><span class="ability-name">${ability.name}</span>: \n${ability.desc}</p>\n`;
             });
         }
+        if (this._Prayer.length > 0) {
+            baseInfo += '<p class="prayers">\nPRAYERS</p>';
+            this._Prayer.forEach(prayer => {
+                baseInfo += `<p><span class="prayer-name">${prayer.name}</span>: \n${prayer.desc}</p>\n` `is a prayer with an answer value of ${prayer.Answer} and a range of ${prayer.range}".\n`;
+            });
+        }
         return baseInfo;
     }
     
@@ -187,16 +196,21 @@ function createClass(Cname,Ccast,Cunbind,Cpray){
     return {Cname,Ccast,Cunbind,Cpray};
 }
 
+function createPrayer(name,Answer,range,desc){
+    return {name,Answer,range,desc};
+}
+
 
 let units = [];
 
 let unit1 = new Unit("Clanrats", 20, 1, 6, 5, 5);
 let unit2 = new Unit("Stormvermin", 10, 1, 6, 6, 4);
-let unit3 = new Unit("Grey Seer on Screaming Bell", 1, 15, 6 + "*", 6, 4);
-let unit4 = new Unit("Lord Screech Verminking", 1, 13, 12 + "*", 10, 4);
+let unit3 = new Unit("Grey Seer on Screaming Bell", 1, 15, 6 , 6, 4);
+let unit4 = new Unit("Lord Screech Verminking", 1, 13, 12, 10, 4);
 let unit5 = new Unit("Debug",-1,0,0,0,0);
+let unit6 = new Unit("Plague Priest on Plague Furnace",1,15,6,10,4);
 
-units.push(unit1, unit2, unit3, unit4,unit5);
+units.push(unit1, unit2, unit3, unit4,unit5,unit6);
 
 
 //Weapons
@@ -208,6 +222,9 @@ let ClawandFang = createWeapon("Tearing Claws and Fangs",1,4,4,3,-1,2);
 let Rustyspike = createWeapon("Rusty Spikes",1,6+"*",3,3,-1,1);
 let Doomgl = createWeapon("Doom Glaive",3,6,3,3,-2,2);
 let Plaguer = createWeapon("Plaguereaper",1,8,3,3,-1,2);
+let GrPlagueC = createWeapon("Great Plague Censer",3,"D3+4",1,1,1,1);
+let WarpstoneS = createWeapon("Warpstone-tipped Staff",2,3,3,3,-1,1);
+let foeBlade = createWeapon("Foetide Blades",1,6,3,4,0,1);
 
 //Shooting attacks
 let Pretail = createShooting("Prehensile Tails",6,4,3,3,-1,1);
@@ -227,6 +244,7 @@ let EliteBody = createSpecial("Elite Bodyguard", "Stormvermin are especially pop
 let ChampRat = createSpecial("Champion","1 model in this unit can be a Clawleader. Add 1 to the Attacks characteristic of that model\’s melee weapon.");
 let StandardRat = createSpecial("Standard Bearer","1 in every 10 models in this unit can be a Clanrat Standard Bearer. This unit can retreat and still charge later in the turn if it includes any Clanrat Standard Bearers.");
 let Musicalrat = createSpecial("Musician", "1 in every 10 models in this unit can be a Clanrat Bellringer. Add 2 to run rolls for this unit if it includes any Clanrat Bellringers.");
+let PoisonFume = createSpecial("Poisonous Fumes","Plague censers emit huge clouds of noxious gas. Subtract 1 from wound rolls for attacks made with melee weapons that target this unit.");
 
 //Wards
 let Ward5 = createWard("Altar of the Horned Rat","An eerie sense of watchfulness surrounds this war engine, and an unholy warding protects it from harm. At the start of your hero phase, you can say that this unit will beseech the Horned Rat instead of attempting to cast spells in that phase. If you do so, in that phase, this unit is treated as having the Priest keyword instead of the Wizard keyword.",5);
@@ -242,6 +260,8 @@ let Beyond = createHero("A Stirring Beyond the Veil"," In times of desperate nee
 let Thirteen = createHero("The Thirteen-headed One","Lord Verminking can call upon his knowledge of the shadowslinking of Eshin, the fleshcrafting of Moulder, the plaguebrewing of Pestilens, the warp-tech of Skryre, the warrior skill of Verminus or the arcane lore of the Masterclan. At the start of your hero phase, pick 1 of the following areas of knowledge for this unit to draw upon. The effect of that area of knowledge applies to this unit until your next hero phase. You cannot pick the same area of knowledge more than once per battle.\n\nKnowledge of the Arcane: Add 1 to casting, unbinding and dispelling rolls for this unit.\n\nKnowledge of Fleshcrafting: When you pick this area of knowledge, heal D3 wounds allocated to this unit.\n\nKnowledge of Plague-brewing: If the unmodified hit roll for an attack made with this unit’s Plaguereaper is 6, that attack causes 1 mortal wound to the target in addition to any damage it inflicts.\n\nKnowledge of Shadowslinking: Subtract 1 from hit rolls for attacks that target this unit.\n\nKnowledge of Warp-tech: This unit’s Doom Glaive has a Rend characteristic of -3 and a Damage characteristic of 3.\n\nKnowledge of the Warrior: Add 1 to wound rolls for attacks made by this unit.")
 let ratking = createHero("The Rat King","The Rat King: The warriors of the skaven fight with rabid fury at Lord Skreech\’s command, in a futile attempt to curry his favour.\n\n You can use this command ability when you pick a friendly SKAVEN unit to fight in the combat phase. That unit must receive the command. Add 1 to hit rolls and wound rolls for attacks made by that unit until the end of that phase.")
 
+//Prayer
+let PestPest = createPrayer("Pestilence-Pestilence",3,13,"With a warpstone tainted glow, the Plague Priest beseeches the Horned Rat to unleash rampant poxes on the battlefield. ");
 
 unit1.addWeapon(rustyspears);
 unit1.addSpecial(Alwaysmore);
@@ -269,6 +289,10 @@ unit4.addWard(Ward5);
 unit4.addHero(Thirteen);
 unit4.addHero(ratking);
 unit4.addMagic(Dthirteen);
+unit6.addWeapon(GrPlagueC);
+unit6.addWeapon(foeBlade);
+unit6.addWeapon(WarpstoneS);
+unit6.addWeapon(Rustyspike);
 
 // units.forEach(unit => {
 //     console.log(unit.info());
