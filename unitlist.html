@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh; 
+            margin: 0; 
+        }
+    
+        select#unitSelector, div#unitInfo {
+            width: 100%;
+            max-width: 600px; 
+            margin-bottom: 20px; 
+            box-sizing: border-box;
+        }
+    
+        #unitInfo {
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-height: 80vh; 
+    overflow-y: auto; 
+}
+
+    
+        div#unitInfo p {
+            margin: 5px 0;
+        }
+    
+        div#unitInfo p.unitName, 
+        div#unitInfo p.Move,
+        div#unitInfo p.Unitsize,
+        div#unitInfo p.Bravery,
+        div#unitInfo p.Wounds,
+        div#unitInfo p.Save {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .ability-name,
+        .magic-name {
+        font-size: 1.2em; 
+        font-weight: bold; 
+    }
+
+.meleeweapons,
+.specialabs,
+.magicjunk {
+    font-size: 2em; 
+    font-weight: bold; 
+    margin-top: 20px; 
+}
+    
+        @media (max-width: 1080px) {
+            body {
+                height: auto;
+                padding-bottom: 20px; 
+            }
+    
+            select#unitSelector, div#unitInfo {
+                max-width: none;
+                margin-left: 10px; 
+                margin-right: 10px; 
+            }
+        }
+    </style>
+    
+    
+    <meta charset="UTF-8">
+    <title>Unit Information Display</title>
+</head>
+<body>
+    <select id="unitSelector">
+        <option>Select a unit</option>
+    </select>
+    <div id="unitInfo"></div>
+    
+    <script src="unitswh.js"></script>
+    
+    
+</body>
+</html>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const selector = document.getElementById('unitSelector');
+        const infoDisplay = document.getElementById('unitInfo');
+
+        
+        units.forEach((unit, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = unit.Name;
+            selector.appendChild(option);
+        });
+
+        
+        selector.addEventListener('change', () => {
+            const selectedUnit = units[selector.value];
+            infoDisplay.innerHTML = selectedUnit.info().replace(/\n/g, '<br>'); 
+            console.log(selectedUnit);
+        });
+    });
+</script>
