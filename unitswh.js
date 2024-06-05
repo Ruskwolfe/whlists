@@ -101,7 +101,7 @@ class Unit {
         <p class="Bravery">Bravery: ${this._Bravery}</p>
         <p class="Wounds">Wounds: ${this._Wounds}</p>
         <p class="Save">Save: ${this._Saves}+</p>`;
-
+    
         if (this._Class.length > 0) {
             this._Class.forEach((clas) => {
                 baseInfo += `\n\n${clas.Cname}`;
@@ -113,44 +113,42 @@ class Unit {
                 }
             });
         }
-        
-         
-
-         if (this._Hero.length > 0) {
+    
+        if (this._Hero.length > 0) {
             baseInfo += "\n\n HEROIC ACTIONS\n";
             this._Hero.forEach((hero) => {
                 baseInfo += `\n${hero.Heroname}
-\n${hero.Herodesc}`;
+    \n${hero.Herodesc}`;
             });
         }
         if (this._Ward.length > 0) {
             baseInfo += "\n\n WARD";
             this._Ward.forEach((ward) => {
                 baseInfo += `\n${ward.Wardname}
-${ward.Warddesc} You get a ${ward.Wardvalue}+ wardsave`;
+    ${ward.Warddesc} You get a ${ward.Wardvalue}+ wardsave`;
             });
         }         
         if (this._Shooting.length > 0) {
             baseInfo += "\n\n It has the following ranged weapons\n";
             this._Shooting.forEach((shooting) => {
                 baseInfo += `\n${shooting.name} \nIt's range is ${shooting.range}".
-It has ${shooting.attacks} attacks, and you need a ${shooting.hit}+ to hit and a ${shooting.wound}+ to wound.
-It grants a ${shooting.rend} to rend, and ${shooting.damage} damage per successful attack.\n`;
+    It has ${shooting.attacks} attacks, and you need a ${shooting.hit}+ to hit and a ${shooting.wound}+ to wound.
+    It grants a ${shooting.rend} to rend, and ${shooting.damage} damage per successful attack.\n`;
             });
         }         
         if (this._Weapons.length > 0) {
-            baseInfo += '<p class="meleeweapons">\nMELEE WEAPONS</p>';;
+            baseInfo += '<p class="meleeweapons">\nMELEE WEAPONS</p>';
             this._Weapons.forEach((weapon) => {
                 baseInfo += `\n${weapon.name} \nIt's range is ${weapon.range}".
-It has ${weapon.attacks} attacks, and you need a ${weapon.hit}+ to hit and a ${weapon.wound}+ to wound.
-It grants a ${weapon.rend} to rend, and ${weapon.damage} damage per successful attack.\n`;
+    It has ${weapon.attacks} attacks, and you need a ${weapon.hit}+ to hit and a ${weapon.wound}+ to wound.
+    It grants a ${weapon.rend} to rend, and ${weapon.damage} damage per successful attack.\n`;
             });
         }
         if (this._Magic.length > 0) {
             baseInfo += '<p class="magicjunk">\nSPELLS</p>';
             this._Magic.forEach((magic) => {
                 baseInfo += `<p><span class="magic-name">${magic.name}</span>: \nWith a range of ${magic.range}".
-It has a casting value of ${magic.value} and if successfully cast, ${magic.desc}</p>\n`;
+    It has a casting value of ${magic.value} and if successfully cast, ${magic.desc}</p>\n`;
             });
         }
         if (this._SpecialAbilities.length > 0) {
@@ -162,11 +160,12 @@ It has a casting value of ${magic.value} and if successfully cast, ${magic.desc}
         if (this._Prayer.length > 0) {
             baseInfo += '<p class="prayers">\nPRAYERS</p>';
             this._Prayer.forEach(prayer => {
-                baseInfo += `<p><span class="prayer-name">${prayer.name}</span>: \n${prayer.desc}</p>\n` `is a prayer with an answer value of ${prayer.Answer} and a range of ${prayer.range}".\n`;
+                baseInfo += `<p><span class="prayer-name">${prayer.name}</span>: \n${prayer.desc} is a prayer with an answer value of ${prayer.Answer} and a range of ${prayer.range}".</p>\n`;
             });
         }
         return baseInfo;
     }
+    
     
 }
 
@@ -293,8 +292,194 @@ unit6.addWeapon(GrPlagueC);
 unit6.addWeapon(foeBlade);
 unit6.addWeapon(WarpstoneS);
 unit6.addWeapon(Rustyspike);
+unit6.addPrayer(PestPest);
+unit6.addClass(Priest1);
+unit6.addWard(Ward5);
 
-// units.forEach(unit => {
-//     console.log(unit.info());
-// });
+document.addEventListener('DOMContentLoaded', () => {
+    const selector = document.getElementById('unitSelector');
+    const infoDisplay = document.getElementById('unitInfo');
+    const unitSound = document.getElementById('unitSound');
+    const fightButton = document.getElementById('fightButton');
+    const resetButton = document.getElementById('resetButton');
+    const muteButton = document.getElementById('muteButton');
+    
+    let attacker = null;
+    let opponent = null;
+
+    units.forEach((unit, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = unit.Name;
+        selector.appendChild(option);
+    });
+
+    selector.addEventListener('change', () => {
+        const selectedUnit = units[selector.value];
+        infoDisplay.innerHTML = selectedUnit.info().replace(/\n/g, '<br>');
+        
+        if (!opponent) {
+            // Play sound only when selecting the attacker
+            unitSound.src = `${selectedUnit.Name}.mp3`; // assuming the sound file is named after the unit
+            unitSound.play();
+        }
+    });
+
+    fightButton.addEventListener('click', () => {
+        if (!attacker) {
+            const selectedIndex = selector.value;
+            if (selectedIndex === 'Select an attacking unit') {
+                alert('Please select an attacking unit first!');
+                return;
+            }
+            attacker = units[selectedIndex];
+            selector.options[0].textContent = 'Select an opponent';
+            selector.selectedIndex = 0;
+            infoDisplay.innerHTML = '';
+        } else {
+            const selectedIndex = selector.value;
+            if (selectedIndex === 'Select an opponent') {
+                alert('Please select an opponent!');
+                return;
+            }
+            opponent = units[selectedIndex];
+            const results = simulateBattles(attacker, opponent, 100);
+            console.log(`Results: ${attacker.Name} wins ${results.unit1Wins}% of the time, ${opponent.Name} wins ${results.unit2Wins}% of the time, Draw ${results.draws}%`);
+            alert(`Results: ${attacker.Name} wins ${results.unit1Wins}% of the time, ${opponent.Name} wins ${results.unit2Wins}% of the time, Draw ${results.draws}%`);
+            fightButton.style.display = 'none';
+            resetButton.style.display = 'block';
+        }
+    });
+
+    resetButton.addEventListener('click', () => {
+        attacker = null;
+        opponent = null;
+        selector.options[0].textContent = 'Select an attacking unit';
+        selector.selectedIndex = 0;
+        infoDisplay.innerHTML = '';
+        fightButton.style.display = 'block';
+        resetButton.style.display = 'none';
+    });
+
+    muteButton.addEventListener('click', () => {
+        unitSound.muted = !unitSound.muted;
+        muteButton.textContent = unitSound.muted ? 'Unmute All Sounds' : 'Mute All Sounds';
+    });
+});
+
+function simulateBattles(unit1, unit2, numBattles) {
+    let unit1Wins = 0;
+    let unit2Wins = 0;
+    let draws = 0;
+
+    for (let i = 0; i < numBattles; i++) {
+        const result = calculateBattleOutcome(unit1, unit2);
+        if (result.includes(`${unit1.Name} wins`)) {
+            unit1Wins++;
+        } else if (result.includes(`${unit2.Name} wins`)) {
+            unit2Wins++;
+        } else {
+            draws++;
+        }
+    }
+
+    return {
+        unit1Wins: (unit1Wins / numBattles) * 100,
+        unit2Wins: (unit2Wins / numBattles) * 100,
+        draws: (draws / numBattles) * 100
+    };
+}
+
+function calculateBattleOutcome(unit1, unit2) {
+    let unit1Models = unit1.Unitsize;
+    let unit2Models = unit2.Unitsize;
+    let totalUnit1Wounds = 0;
+    let totalUnit2Wounds = 0;
+
+    console.log(`Battle start: ${unit1.Name} vs ${unit2.Name}`);
+    console.log(`Initial state: ${unit1.Name} models: ${unit1Models}, ${unit2.Name} models: ${unit2Models}`);
+
+    // Simulate a few rounds of combat
+    for (let round = 1; round <= 10; round++) {
+        // Unit 1 attacks Unit 2
+        let unit2Wounds = calculateDamage(unit1, unit2, unit1Models);
+        unit2Wounds = applyWardSaves(unit2, unit2Wounds);
+        let unit2Casualties = Math.floor(unit2Wounds / unit2.Wounds);
+        unit2Models -= unit2Casualties;
+        totalUnit2Wounds += unit2Wounds;
+
+        // Unit 2 attacks Unit 1
+        let unit1Wounds = calculateDamage(unit2, unit1, unit2Models);
+        unit1Wounds = applyWardSaves(unit1, unit1Wounds);
+        let unit1Casualties = Math.floor(unit1Wounds / unit1.Wounds);
+        unit1Models -= unit1Casualties;
+        totalUnit1Wounds += unit1Wounds;
+
+        // Log round results
+        console.log(`Round ${round}: ${unit2Casualties} ${unit2.Name} died, ${unit1Casualties} ${unit1.Name} died`);
+        console.log(`${unit1.Name} models left: ${unit1Models}, ${unit2.Name} models left: ${unit2Models}`);
+
+        // Check if any unit is defeated
+        if (unit1Models <= 0 && unit2Models <= 0) {
+            console.log('Both units are defeated!');
+            return 'Both units are defeated!';
+        } else if (unit1Models <= 0) {
+            console.log(`${unit2.Name} wins!`);
+            return `${unit2.Name} wins!`;
+        } else if (unit2Models <= 0) {
+            console.log(`${unit1.Name} wins!`);
+            return `${unit1.Name} wins!`;
+        }
+    }
+
+    // Determine the winner based on remaining models
+    if (unit1Models > unit2Models) {
+        console.log(`${unit1.Name} wins!`);
+        return `${unit1.Name} wins!`;
+    } else if (unit2Models > unit1Models) {
+        console.log(`${unit2.Name} wins!`);
+        return `${unit2.Name} wins!`;
+    } else {
+        console.log('It\'s a draw!');
+        return 'It\'s a draw!';
+    }
+}
+
+function calculateDamage(attacker, defender, attackerModels) {
+    let totalDamage = 0;
+
+    // Calculate damage for each weapon
+    attacker._Weapons.forEach(weapon => {
+        for (let i = 0; i < weapon.attacks * attackerModels; i++) {
+            if (rollDice() >= weapon.hit) { // Hit roll
+                if (rollDice() >= weapon.wound) { // Wound roll
+                    if (rollDice() < defender.Saves + weapon.rend) { // Save roll
+                        totalDamage += parseInt(weapon.damage);
+                    }
+                }
+            }
+        }
+    });
+
+    return totalDamage;
+}
+
+function applyWardSaves(unit, wounds) {
+    let wardSaves = unit._Ward.length > 0 ? unit._Ward[0].Wardvalue : null; // Assume only one ward save value for simplicity
+    if (wardSaves) {
+        let savedWounds = 0;
+        for (let i = 0; i < wounds; i++) {
+            if (rollDice() >= wardSaves) { // Ward save roll
+                savedWounds++;
+            }
+        }
+        wounds -= savedWounds;
+    }
+    return wounds;
+}
+
+function rollDice() {
+    return Math.floor(Math.random() * 6) + 1;
+}
+
 

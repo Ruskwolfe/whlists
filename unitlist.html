@@ -14,7 +14,7 @@
             margin: 0;
         }
 
-        select#unitSelector, div#unitInfo {
+        select, button {
             width: 100%;
             max-width: 600px;
             margin-bottom: 20px;
@@ -65,7 +65,7 @@
                 padding-bottom: 20px;
             }
 
-            select#unitSelector, div#unitInfo {
+            select, div#unitInfo {
                 max-width: none;
                 margin-left: 10px;
                 margin-right: 10px;
@@ -77,34 +77,13 @@
 </head>
 <body>
     <select id="unitSelector">
-        <option>Select a unit</option>
+        <option>Select an attacking unit</option>
     </select>
     <div id="unitInfo"></div>
     <audio id="unitSound" src=""></audio>
+    <button id="fightButton">Fight!</button>
+    <button id="resetButton" style="display: none;">Reset</button>
+    <button id="muteButton">Mute All Sounds</button>
     <script src="unitswh.js"></script>
 </body>
 </html>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const selector = document.getElementById('unitSelector');
-    const infoDisplay = document.getElementById('unitInfo');
-    const unitSound = document.getElementById('unitSound');
-
-    units.forEach((unit, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = unit.Name;
-        selector.appendChild(option);
-    });
-
-    selector.addEventListener('change', () => {
-        const selectedUnit = units[selector.value];
-        infoDisplay.innerHTML = selectedUnit.info().replace(/\n/g, '<br>');
-        
-        // Update the audio source and play the sound
-        unitSound.src = `${selectedUnit.Name}.mp3`; // assuming the sound file is named after the unit
-        unitSound.play();
-    });
-});
-</script>
